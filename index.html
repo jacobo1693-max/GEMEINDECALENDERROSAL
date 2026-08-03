@@ -79,6 +79,20 @@
     transition: background 0.15s;
   }
   .nav button:hover { background: var(--navy-soft); }
+  .print-btn {
+    background: var(--gold);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0 16px;
+    height: 34px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .print-btn:hover { background: #96773d; }
   .nav select {
     font-family: Georgia, serif;
     font-size: 15px;
@@ -201,6 +215,22 @@
     .future-item { flex-direction: column; gap: 2px; }
     .future-item .fdate { width: auto; }
   }
+
+  /* ===== Druckansicht (tamaño carta) ===== */
+  @media print {
+    @page { size: letter portrait; margin: 0.35in; }
+    html, body { background: #fff; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .wrap { max-width: 100%; padding: 0; }
+    .nav select, .print-btn, #prevBtn, #nextBtn { display: none !important; }
+    .header { margin-bottom: 10px; padding-bottom: 8px; }
+    .cal-card, .future-card { box-shadow: none; border: 1px solid var(--line); page-break-inside: avoid; }
+    .cal-card { margin-bottom: 12px; padding: 10px; }
+    .cell { min-height: 62px; padding: 3px 4px; }
+    .cell .ev { font-size: 8px; }
+    .future-card { padding: 10px 14px; }
+    .future-item { padding: 5px 0; }
+  }
 </style>
 </head>
 <body>
@@ -219,6 +249,7 @@
       <select id="monthSelect"></select>
       <select id="yearSelect"></select>
       <button id="nextBtn" title="Nächster Monat">›</button>
+      <button class="print-btn" id="printBtn" title="Drucken">🖨 Drucken</button>
     </div>
   </div>
 
@@ -401,6 +432,10 @@
       list.appendChild(item);
     });
   }
+
+  document.getElementById('printBtn').addEventListener('click', () => {
+    window.print();
+  });
 
   document.getElementById('prevBtn').addEventListener('click', () => {
     current.month--;
