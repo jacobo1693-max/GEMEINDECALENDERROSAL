@@ -93,6 +93,7 @@
     transition: background 0.15s;
   }
   .print-btn:hover { background: #96773d; }
+  .print-title { display: none; }
   .nav select {
     font-family: Georgia, serif;
     font-size: 15px;
@@ -223,6 +224,15 @@
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     .wrap { max-width: 100%; padding: 0; }
     .nav select, .print-btn, #prevBtn, #nextBtn { display: none !important; }
+    .print-title {
+      display: block !important;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
     .header { margin-bottom: 10px; padding-bottom: 8px; }
     .cal-card, .future-card { box-shadow: none; border: 1px solid var(--line); page-break-inside: avoid; }
     .cal-card { margin-bottom: 12px; padding: 10px; }
@@ -250,6 +260,7 @@
       <select id="yearSelect"></select>
       <button id="nextBtn" title="Nächster Monat">›</button>
       <button class="print-btn" id="printBtn" title="Drucken">🖨 Drucken</button>
+      <div class="print-title" id="printTitle"></div>
     </div>
   </div>
 
@@ -355,6 +366,7 @@
   function render() {
     monthSelect.value = current.month;
     yearSelect.value = current.year;
+    document.getElementById('printTitle').textContent = monthNames[current.month] + ' ' + current.year;
 
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
