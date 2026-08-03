@@ -408,18 +408,19 @@
       }
       grid.appendChild(cell);
     }
+
+    renderFuture();
   }
 
   function renderFuture() {
     const list = document.getElementById('futureList');
     list.innerHTML = '';
 
-    // Heutiges Datum (echtes "heute", nicht der angezeigte Monat)
-    const todayKey = dateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+    // Grenze = erster Tag des GERADE ANGEZEIGTEN Monats (nicht das echte "heute").
+    // So verschwinden vergangene Ereignisse automatisch, sobald man im Kalender weiterblättert.
+    const thresholdKey = dateKey(current.year, current.month, 1);
 
-    // Vergangene Ereignisse automatisch ausblenden: nur zeigen, wenn das
-    // Enddatum (oder Startdatum, falls kein Ende) noch nicht vorbei ist.
-    const upcoming = futureEvents.filter(ev => (ev.end || ev.start) >= todayKey);
+    const upcoming = futureEvents.filter(ev => (ev.end || ev.start) >= thresholdKey);
     const sorted = upcoming.sort((a,b) => a.start.localeCompare(b.start));
 
     if (sorted.length === 0) {
@@ -465,7 +466,6 @@
   yearSelect.addEventListener('change', () => { current.year = parseInt(yearSelect.value); render(); });
 
   render();
-  renderFuture();
 </script>
 </body>
 </html>
