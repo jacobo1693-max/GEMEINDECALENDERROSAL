@@ -287,14 +287,15 @@
 <script>
   // ===== Feste Ereignisse (Ausnahmen, die die wöchentliche Regel überschreiben) =====
   const events = {
-    "2026-08-02": ["Frauenchor üben", "10:00 – Hauptgottesdienst und Sonntagschule"],
     "2026-08-06": ["Kein Frauen-Bibelstudium und Gebetsstunde"],
-    "2026-08-09": ["10:00 – Hauptgottesdienst und Sonntagschule", "5:00 pm – Mini-Jugend"],
     "2026-08-14": ["Gemeindeausflug mit Campo 101 in Sainapuchi", "10am–2pm Kindertag und Gemeinschaft für Erwachsene", "8pm – Abendgottesdienst"],
     "2026-08-16": ["Kein Gottesdienst in Rosal", "Gemeindeausflug mit Neustädt in Sainapuchi", "10am – Morgengottesdienst, Nachmittags Gemeinschaft"],
     "2026-08-20": ["Kein Frauen-Bibelstudium"],
-    "2026-08-23": ["Kinderchor üben", "10:00 – Hauptgottesdienst und Sonntagschule"],
-    "2026-08-30": ["10:00 – Hauptgottesdienst und Sonntagschule"]
+    "2026-09-23": ["7:30 pm – Abendversammlung mit Br. David Knelsen"],
+    "2026-09-24": ["7:30 pm – Abendversammlung mit Br. David Knelsen"],
+    "2026-09-25": ["7:30 pm – Abendversammlung mit Br. David Knelsen"],
+    "2026-09-26": ["7:00 am – Männer-Gebetsfrühstück, Pizzería La Sierra km 6, mit Br. David Knelsen"],
+    "2026-09-27": ["10:00 am – Gottesdienst mit Br. David Knelsen", "Danach gemeinsames Mittagessen im Gym"]
   };
 
   // ===== Wöchentliche Regeln (gelten für alle Monate, außer an Tagen mit festen Ereignissen oben) =====
@@ -308,10 +309,62 @@
     return true;
   }
 
+  // Prüft, ob dieser Mittwoch der Mittwoch direkt vor dem ersten Sonntag
+  // des (eventuell nächsten) Monats ist.
+  function isWednesdayBeforeFirstSunday(year, month, day) {
+    const nextSunday = new Date(year, month, day + 4); // Mittwoch + 4 Tage = Sonntag
+    return nextSunday.getDate() <= 7;
+  }
+
+  // Basis-Monat für den abwechselnden Chor-Rhythmus: August 2026 = Frauenchor.
+  function isFrauenchorMonth(year, month) {
+    const monthsSinceBase = (year - 2026) * 12 + (month - 7);
+    return ((monthsSinceBase % 2) + 2) % 2 === 0;
+  }
+
+  // "Centro Luz en mi Camino": immer der 2. Montag des Monats, alle 3 Monate
+  // ab September 2026, mit abwechselnder Gruppe (Gruppe 2 zuerst, dann Gruppe 1, usw.).
+  function nthWeekdayOfMonth(year, month, weekday, n) {
+    const firstWeekday = new Date(year, month, 1).getDay();
+    return 1 + ((7 + weekday - firstWeekday) % 7) + (n - 1) * 7;
+  }
+  function isCentroLuzMonth(year, month) {
+    const baseIndex = 2026 * 12 + 8; // September 2026
+    const diff = year * 12 + month - baseIndex;
+    return diff >= 0 && diff % 3 === 0;
+  }
+  function centroLuzGroup(year, month) {
+    const baseIndex = 2026 * 12 + 8;
+    const occurrence = (year * 12 + month - baseIndex) / 3;
+    return occurrence % 2 === 0 ? 2 : 1;
+  }
+  function centroLuzInfo(year, month, day) {
+    if (!isCentroLuzMonth(year, month)) return null;
+    const secondMonday = nthWeekdayOfMonth(year, month, 1, 2); // Montag = 1
+    if (day !== secondMonday) return null;
+    return centroLuzGroup(year, month);
+  }
+
+  // Gemeinschaftsabend: alle 2 Monate ab September 2026, immer am 3. Sonntag,
+  // abwechselnd im Gym / in den Häusern.
+  function isGemeinschaftsabendMonth(year, month) {
+    const baseIndex = 2026 * 12 + 8; // September 2026
+    const diff = year * 12 + month - baseIndex;
+    return diff >= 0 && diff % 2 === 0;
+  }
+  function gemeinschaftsabendOrt(year, month) {
+    const baseIndex = 2026 * 12 + 8;
+    const occurrence = (year * 12 + month - baseIndex) / 2;
+    return occurrence % 2 === 0 ? "im Gym" : "in den Häusern";
+  }
+
   function getRecurringEvents(year, month, day) {
     const dow = new Date(year, month, day).getDay();
     const result = [];
     if (dow === 3) { // Mittwoch
+      if (isWednesdayBeforeFirstSunday(year, month, day)) {
+        result.push("6:30 pm – Gitarrenüben");
+      }
       if (isLastWeekdayOfMonth(year, month, day, 3)) {
         result.push("7:30 – Gebetstunde und Kinderstunde");
       } else {
@@ -325,16 +378,42 @@
         result.push("7:30 – Jugendstunde");
       }
     }
+    if (dow === 0) { // Sonntag
+      const occurrence = Math.floor((day - 1) / 7) + 1; // 1. bis 5. Sonntag des Monats
+      if (occurrence === 1) {
+        result.push(isFrauenchorMonth(year, month) ? "Frauenchor üben" : "Gemeindechor üben");
+      }
+      if (occurrence === 4) {
+        result.push("Kinderchor üben");
+      }
+      result.push("10:00 am – Hauptgottesdienst und Sonntagsschule");
+      if (occurrence === 2) {
+        result.push("5:00 pm – Mini-Jugend");
+      }
+      if (occurrence === 3) {
+        result.push("Worship-Team – besonderer Gesang");
+        if (isGemeinschaftsabendMonth(year, month)) {
+          const ort = gemeinschaftsabendOrt(year, month);
+          result.push(`5:00 pm – Gemeinschaftsabend ${ort}: jeder bringt Essen und Getränke mit, Kaffee wird gestellt`);
+        }
+      }
+    }
+
+    const gruppe = centroLuzInfo(year, month, day);
+    if (gruppe !== null) {
+      result.push(`7:00 pm – Programm Centro Luz en mi Camino (Gruppe ${gruppe})`);
+      result.push("Wenn es dir nicht möglich ist mitzumachen, suche dir bitte selbst einen Ersatz, damit die Gruppe vollständig ist");
+      result.push("Bitte bring auch dein Glaubenslieder-Buch mit");
+    }
+
     return result;
   }
 
   // ===== Zukünftiges (kurze Beschreibung) =====
   const futureEvents = [
     { start: "2026-08-14", end: "2026-08-16", title: "Gemeindeausflug", desc: "Neustädt und Rosal in Sainapuchi" },
-    { start: "2026-09-14", title: "Programm Centro Luz en mi Camino", desc: "7:00 pm – Gruppe 2" },
-    { start: "2026-09-20", title: "Gemeinschaftsabend", desc: "5:00 pm im Gym – Abendbrot, bitte Essen und Getränke mitbringen" },
     { start: "2026-09-23", end: "2026-09-25", title: "Abendversammlungen", desc: "Täglich 7:30 pm, mit Br. David Knelsen" },
-    { start: "2026-09-26", title: "Männer-Gebetsfrühstück", desc: "7:00 am – Pizzería La Sierra km 7" },
+    { start: "2026-09-26", title: "Männer-Gebetsfrühstück", desc: "7:00 am – Pizzería La Sierra km 6, mit Br. David Knelsen" },
     { start: "2026-09-27", title: "Gottesdienst mit Br. David Knelsen", desc: "10:00 am, danach gemeinsames Mittagessen im Gym" }
   ];
 
@@ -412,6 +491,52 @@
     renderFuture();
   }
 
+  function getUpcomingCentroLuz(thresholdKey, count) {
+    const [ty, tm] = thresholdKey.split('-').map(Number);
+    let year = ty, month = tm - 1;
+    const results = [];
+    for (let i = 0; i < 48 && results.length < count; i++) {
+      if (isCentroLuzMonth(year, month)) {
+        const day = nthWeekdayOfMonth(year, month, 1, 2);
+        const key = dateKey(year, month, day);
+        if (key >= thresholdKey) {
+          const gruppe = centroLuzGroup(year, month);
+          results.push({
+            start: key,
+            title: "Programm Centro Luz en mi Camino",
+            desc: `7:00 pm – Gruppe ${gruppe}`
+          });
+        }
+      }
+      month++;
+      if (month > 11) { month = 0; year++; }
+    }
+    return results;
+  }
+
+  function getUpcomingGemeinschaftsabend(thresholdKey, count) {
+    const [ty, tm] = thresholdKey.split('-').map(Number);
+    let year = ty, month = tm - 1;
+    const results = [];
+    for (let i = 0; i < 48 && results.length < count; i++) {
+      if (isGemeinschaftsabendMonth(year, month)) {
+        const day = nthWeekdayOfMonth(year, month, 0, 3); // 3. Sonntag (Sonntag = 0)
+        const key = dateKey(year, month, day);
+        if (key >= thresholdKey) {
+          const ort = gemeinschaftsabendOrt(year, month);
+          results.push({
+            start: key,
+            title: "Gemeinschaftsabend",
+            desc: `5:00 pm ${ort} – jeder bringt Essen und Getränke mit`
+          });
+        }
+      }
+      month++;
+      if (month > 11) { month = 0; year++; }
+    }
+    return results;
+  }
+
   function renderFuture() {
     const list = document.getElementById('futureList');
     list.innerHTML = '';
@@ -421,7 +546,9 @@
     const thresholdKey = dateKey(current.year, current.month, 1);
 
     const upcoming = futureEvents.filter(ev => (ev.end || ev.start) >= thresholdKey);
-    const sorted = upcoming.sort((a,b) => a.start.localeCompare(b.start));
+    const upcomingCentroLuz = getUpcomingCentroLuz(thresholdKey, 1);
+    const upcomingGemeinschaft = getUpcomingGemeinschaftsabend(thresholdKey, 1);
+    const sorted = [...upcoming, ...upcomingCentroLuz, ...upcomingGemeinschaft].sort((a,b) => a.start.localeCompare(b.start));
 
     if (sorted.length === 0) {
       list.innerHTML = '<div class="empty-note">Keine bevorstehenden Ereignisse.</div>';
