@@ -1,1 +1,424 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Gemeinde Gottes Rosal — Kalender</title>
+<style>
+  :root{
+    --paper: #FAF7F1;
+    --ink: #2B2A28;
+    --line: #D8D2C4;
+    --navy: #22344A;
+    --navy-soft: #3E5877;
+    --gold: #B08D4F;
+    --red: #A32B2B;
+    --green: #3D6B4A;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #E9E5DA;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+  }
+  .wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 28px 20px 60px 20px;
+  }
 
+  /* ===== Header ===== */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--navy);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .church-mark { display: flex; align-items: center; gap: 12px; }
+  .cross { width: 22px; height: 30px; position: relative; flex-shrink: 0; }
+  .cross::before, .cross::after { content:""; position:absolute; background: var(--gold); }
+  .cross::before { width:6px; height:30px; left:8px; top:0; }
+  .cross::after { width:22px; height:6px; left:0; top:8px; }
+  .church-name {
+    font-family: Georgia, serif;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.2;
+  }
+  .church-name .sub {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  /* ===== Navigation ===== */
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .nav button {
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .nav button:hover { background: var(--navy-soft); }
+  .nav select {
+    font-family: Georgia, serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+
+  /* ===== Calendar card ===== */
+  .cal-card {
+    background: var(--paper);
+    border-radius: 10px;
+    padding: 18px 18px 12px 18px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+    margin-bottom: 24px;
+  }
+
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+  }
+  .weekdays div {
+    text-align: center;
+    font-size: 10.5px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--navy-soft);
+    padding-bottom: 8px;
+  }
+  .weekdays div.so { color: var(--red); font-weight: 700; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  .cell {
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    min-height: 92px;
+    padding: 6px 6px;
+    position: relative;
+  }
+  .cell.empty { background: repeating-linear-gradient(135deg, transparent, transparent 6px, rgba(0,0,0,0.02) 6px, rgba(0,0,0,0.02) 7px); }
+  .cell .num { font-size: 12px; font-weight: 700; color: var(--ink); }
+  .cell.sonntag .num { color: var(--red); }
+  .cell.heute { outline: 2px solid var(--gold); outline-offset: -2px; }
+  .cell .ev {
+    font-size: 9.7px;
+    line-height: 1.25;
+    color: var(--navy-soft);
+    margin-top: 3px;
+    word-break: break-word;
+  }
+  .cell .ev + .ev { margin-top: 3px; }
+
+  /* ===== Zukünftiges ===== */
+  .future-card {
+    background: var(--paper);
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+  }
+  .future-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--navy);
+    border-bottom: 2px solid var(--navy);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  .future-item {
+    display: flex;
+    gap: 14px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .future-item:last-child { border-bottom: none; }
+  .future-item .fdate {
+    flex-shrink: 0;
+    width: 130px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 0.3px;
+  }
+  .future-item .ftext .ftitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .future-item .ftext .fdesc {
+    font-size: 11.5px;
+    color: var(--navy-soft);
+    margin-top: 1px;
+  }
+
+  .empty-note {
+    font-size: 12px;
+    color: var(--navy-soft);
+    font-style: italic;
+    padding: 8px 0;
+  }
+
+  @media (max-width: 560px) {
+    .cell { min-height: 70px; padding: 4px; }
+    .cell .ev { font-size: 8.5px; }
+    .weekdays div { font-size: 8.5px; }
+    .future-item { flex-direction: column; gap: 2px; }
+    .future-item .fdate { width: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="church-mark">
+      <div class="cross"></div>
+      <div class="church-name">
+        Gemeinde Gottes Rosal
+        <span class="sub">Kalender</span>
+      </div>
+    </div>
+    <div class="nav">
+      <button id="prevBtn" title="Voriger Monat">‹</button>
+      <select id="monthSelect"></select>
+      <select id="yearSelect"></select>
+      <button id="nextBtn" title="Nächster Monat">›</button>
+    </div>
+  </div>
+
+  <div class="cal-card">
+    <div class="weekdays">
+      <div class="so">Sonntag</div>
+      <div>Montag</div>
+      <div>Dienstag</div>
+      <div>Mittwoch</div>
+      <div>Donnerstag</div>
+      <div>Freitag</div>
+      <div>Samstag</div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="future-card">
+    <div class="future-title">📖 Zukünftiges</div>
+    <div id="futureList"></div>
+  </div>
+
+</div>
+
+<script>
+  // ===== Feste Ereignisse (Ausnahmen, die die wöchentliche Regel überschreiben) =====
+  const events = {
+    "2026-08-02": ["Frauenchor üben", "10:00 – Hauptgottesdienst und Sonntagschule"],
+    "2026-08-06": ["Kein Frauen-Bibelstudium und Gebetsstunde"],
+    "2026-08-09": ["10:00 – Hauptgottesdienst und Sonntagschule", "5:00 pm – Mini-Jugend"],
+    "2026-08-14": ["Gemeindeausflug mit Campo 101 in Sainapuchi", "10am–2pm Kindertag und Gemeinschaft für Erwachsene", "8pm – Abendgottesdienst"],
+    "2026-08-16": ["Kein Gottesdienst in Rosal", "Gemeindeausflug mit Neustädt in Sainapuchi", "10am – Morgengottesdienst, Nachmittags Gemeinschaft"],
+    "2026-08-20": ["Kein Frauen-Bibelstudium"],
+    "2026-08-23": ["Kinderchor üben", "10:00 – Hauptgottesdienst und Sonntagschule"],
+    "2026-08-30": ["10:00 – Hauptgottesdienst und Sonntagschule"]
+  };
+
+  // ===== Wöchentliche Regeln (gelten für alle Monate, außer an Tagen mit festen Ereignissen oben) =====
+  // Mittwoch: immer 7:30 – Gebetstunde. Am letzten Mittwoch des Monats zusätzlich Kinderstunde.
+  // Freitag: immer 7:30 – Jugendstunde. Am letzten Freitag des Monats stattdessen 7:00 – Jugendstunde in Neustädt.
+  function isLastWeekdayOfMonth(year, month, day, weekday) {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (let d = day + 1; d <= daysInMonth; d++) {
+      if (new Date(year, month, d).getDay() === weekday) return false;
+    }
+    return true;
+  }
+
+  function getRecurringEvents(year, month, day) {
+    const dow = new Date(year, month, day).getDay();
+    const result = [];
+    if (dow === 3) { // Mittwoch
+      if (isLastWeekdayOfMonth(year, month, day, 3)) {
+        result.push("7:30 – Gebetstunde und Kinderstunde");
+      } else {
+        result.push("7:30 – Gebetstunde");
+      }
+    }
+    if (dow === 5) { // Freitag
+      if (isLastWeekdayOfMonth(year, month, day, 5)) {
+        result.push("7:00 – Jugendstunde in Neustädt");
+      } else {
+        result.push("7:30 – Jugendstunde");
+      }
+    }
+    return result;
+  }
+
+  // ===== Zukünftiges (kurze Beschreibung) =====
+  const futureEvents = [
+    { start: "2026-08-14", end: "2026-08-16", title: "Gemeindeausflug", desc: "Neustädt und Rosal in Sainapuchi" },
+    { start: "2026-09-14", title: "Programm Centro Luz en mi Camino", desc: "7:00 pm – Gruppe 2" },
+    { start: "2026-09-20", title: "Gemeinschaftsabend", desc: "5:00 pm im Gym – Abendbrot, bitte Essen und Getränke mitbringen" },
+    { start: "2026-09-23", end: "2026-09-25", title: "Abendversammlungen", desc: "Täglich 7:30 pm, mit Br. David Knelsen" },
+    { start: "2026-09-26", title: "Männer-Gebetsfrühstück", desc: "7:00 am – Pizzería La Sierra km 7" },
+    { start: "2026-09-27", title: "Gottesdienst mit Br. David Knelsen", desc: "10:00 am, danach gemeinsames Mittagessen im Gym" }
+  ];
+
+  const monthNames = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+
+  const monthSelect = document.getElementById('monthSelect');
+  const yearSelect = document.getElementById('yearSelect');
+  monthNames.forEach((m,i) => {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = m;
+    monthSelect.appendChild(opt);
+  });
+  const YEAR_START = 2026, YEAR_END = 2060;
+  for (let y = YEAR_START; y <= YEAR_END; y++) {
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y;
+    yearSelect.appendChild(opt);
+  }
+
+  let current = { year: 2026, month: 7 }; // August 2026 (0-indexiert)
+
+  function pad(n){ return n.toString().padStart(2,'0'); }
+  function dateKey(y,m,d){ return `${y}-${pad(m+1)}-${pad(d)}`; }
+  function formatShort(dateStr){
+    const [y,m,d] = dateStr.split('-').map(Number);
+    return `${d}. ${monthNames[m-1].slice(0,3)}. ${y}`;
+  }
+
+  function render() {
+    monthSelect.value = current.month;
+    yearSelect.value = current.year;
+
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+
+    const firstDay = new Date(current.year, current.month, 1);
+    const startWeekday = firstDay.getDay(); // 0 = Sonntag
+    const daysInMonth = new Date(current.year, current.month + 1, 0).getDate();
+    const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
+
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === current.year && today.getMonth() === current.month;
+
+    for (let i = 0; i < totalCells; i++) {
+      const dayNum = i - startWeekday + 1;
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      const col = i % 7;
+
+      if (dayNum < 1 || dayNum > daysInMonth) {
+        cell.classList.add('empty');
+      } else {
+        if (col === 0) cell.classList.add('sonntag');
+        if (isCurrentMonth && dayNum === today.getDate()) cell.classList.add('heute');
+
+        const num = document.createElement('div');
+        num.className = 'num';
+        num.textContent = dayNum;
+        cell.appendChild(num);
+
+        const key = dateKey(current.year, current.month, dayNum);
+        // Feste Ereignisse überschreiben die wöchentliche Regel; sonst gilt die Regel automatisch.
+        const dayEvents = events[key] || getRecurringEvents(current.year, current.month, dayNum);
+        dayEvents.forEach(txt => {
+          const ev = document.createElement('div');
+          ev.className = 'ev';
+          ev.textContent = txt;
+          cell.appendChild(ev);
+        });
+      }
+      grid.appendChild(cell);
+    }
+  }
+
+  function renderFuture() {
+    const list = document.getElementById('futureList');
+    list.innerHTML = '';
+
+    // Heutiges Datum (echtes "heute", nicht der angezeigte Monat)
+    const todayKey = dateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+    // Vergangene Ereignisse automatisch ausblenden: nur zeigen, wenn das
+    // Enddatum (oder Startdatum, falls kein Ende) noch nicht vorbei ist.
+    const upcoming = futureEvents.filter(ev => (ev.end || ev.start) >= todayKey);
+    const sorted = upcoming.sort((a,b) => a.start.localeCompare(b.start));
+
+    if (sorted.length === 0) {
+      list.innerHTML = '<div class="empty-note">Keine bevorstehenden Ereignisse.</div>';
+      return;
+    }
+
+    sorted.forEach(ev => {
+      const item = document.createElement('div');
+      item.className = 'future-item';
+
+      const dateLabel = ev.end
+        ? `${formatShort(ev.start)} – ${formatShort(ev.end)}`
+        : formatShort(ev.start);
+
+      item.innerHTML = `
+        <div class="fdate">${dateLabel}</div>
+        <div class="ftext">
+          <div class="ftitle">${ev.title}</div>
+          <div class="fdesc">${ev.desc}</div>
+        </div>`;
+      list.appendChild(item);
+    });
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    current.month--;
+    if (current.month < 0) { current.month = 11; current.year--; }
+    if (current.year < YEAR_START) { current.year = YEAR_START; current.month = 0; }
+    render();
+  });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    current.month++;
+    if (current.month > 11) { current.month = 0; current.year++; }
+    if (current.year > YEAR_END) { current.year = YEAR_END; current.month = 11; }
+    render();
+  });
+  monthSelect.addEventListener('change', () => { current.month = parseInt(monthSelect.value); render(); });
+  yearSelect.addEventListener('change', () => { current.year = parseInt(yearSelect.value); render(); });
+
+  render();
+  renderFuture();
+</script>
+</body>
+</html>
