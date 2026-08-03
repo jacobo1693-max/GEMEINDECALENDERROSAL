@@ -296,7 +296,16 @@
     "2026-09-24": ["7:30 pm – Abendversammlung mit Br. David Knelsen"],
     "2026-09-25": ["7:30 pm – Abendversammlung mit Br. David Knelsen"],
     "2026-09-26": ["7:00 am – Männer-Gebetsfrühstück, Pizzería La Sierra km 6, mit Br. David Knelsen"],
-    "2026-09-27": ["10:00 am – Gottesdienst mit Br. David Knelsen", "Danach gemeinsames Mittagessen im Gym"]
+    "2026-09-27": ["10:00 am – Gottesdienst mit Br. David Knelsen", "Danach gemeinsames Mittagessen im Gym"],
+    "2026-10-17": ["7:00 am – Männer-Gebetsfrühstück"],
+    "2026-11-08": ["10:00 am – Erntedankfest, mit gemeinsamem Mittagessen", "Keine Sonntagschule"],
+    "2026-11-21": ["7:00 am – Männer-Gebetsfrühstück"],
+    "2026-12-19": ["Kein Männer-Gebetsfrühstück"],
+    "2026-12-23": ["Keine Gebetstunde"],
+    "2026-12-25": ["10:00 am – Weihnachtsbotschaft"],
+    "2026-12-30": ["6:30 pm – Gitarrenüben", "Keine Gebetstunde und Kinderstunde"],
+    "2026-12-31": ["6:00 pm – Silvesterabend"],
+    "2027-01-13": ["6:30 pm – Geschäftsversammlung", "7:30 – Gebetstunde"]
   };
 
   // ===== Wöchentliche Regeln (gelten für alle Monate, außer an Tagen mit festen Ereignissen oben) =====
@@ -395,7 +404,10 @@
         result.push("Worship-Team – besonderer Gesang");
         if (isGemeinschaftsabendMonth(year, month)) {
           const ort = gemeinschaftsabendOrt(year, month);
-          result.push(`5:00 pm – Gemeinschaftsabend ${ort}: jeder bringt Essen und Getränke mit, Kaffee wird gestellt`);
+          const detalle = ort === "im Gym"
+            ? "jeder bringt Essen und Getränke mit, Kaffee wird gestellt"
+            : "jeder bringt Essen mit, der Hausbesitzer sorgt für die Getränke";
+          result.push(`5:00 pm – Gemeinschaftsabend ${ort}: ${detalle}`);
         }
       }
     }
@@ -415,7 +427,14 @@
     { start: "2026-08-14", end: "2026-08-16", title: "Gemeindeausflug", desc: "Neustädt und Rosal in Sainapuchi" },
     { start: "2026-09-23", end: "2026-09-25", title: "Abendversammlungen", desc: "Täglich 7:30 pm, mit Br. David Knelsen" },
     { start: "2026-09-26", title: "Männer-Gebetsfrühstück", desc: "7:00 am – Pizzería La Sierra km 6, mit Br. David Knelsen" },
-    { start: "2026-09-27", title: "Gottesdienst mit Br. David Knelsen", desc: "10:00 am, danach gemeinsames Mittagessen im Gym" }
+    { start: "2026-09-27", title: "Gottesdienst mit Br. David Knelsen", desc: "10:00 am, danach gemeinsames Mittagessen im Gym" },
+    { start: "2026-10-17", title: "Männer-Gebetsfrühstück", desc: "7:00 am" },
+    { start: "2026-11-08", title: "Erntedankfest", desc: "10:00 am – mit gemeinsamem Mittagessen" },
+    { start: "2026-11-21", title: "Männer-Gebetsfrühstück", desc: "7:00 am" },
+    { start: "2026-12-19", title: "Kein Männer-Gebetsfrühstück", desc: "" },
+    { start: "2026-12-25", title: "Weihnachtsbotschaft", desc: "10:00 am" },
+    { start: "2026-12-31", title: "Silvesterabend", desc: "6:00 pm" },
+    { start: "2027-01-13", title: "Geschäftsversammlung", desc: "6:30 pm" }
   ];
 
   const monthNames = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
@@ -492,7 +511,7 @@
     renderFuture();
   }
 
-  function getUpcomingCentroLuz(thresholdKey, count) {
+  function getUpcomingCentroLuz(thresholdKey, windowEndKey, count) {
     const [ty, tm] = thresholdKey.split('-').map(Number);
     let year = ty, month = tm - 1;
     const results = [];
@@ -500,7 +519,7 @@
       if (isCentroLuzMonth(year, month)) {
         const day = nthWeekdayOfMonth(year, month, 1, 2);
         const key = dateKey(year, month, day);
-        if (key >= thresholdKey) {
+        if (key >= thresholdKey && key <= windowEndKey) {
           const gruppe = centroLuzGroup(year, month);
           results.push({
             start: key,
@@ -515,7 +534,7 @@
     return results;
   }
 
-  function getUpcomingGemeinschaftsabend(thresholdKey, count) {
+  function getUpcomingGemeinschaftsabend(thresholdKey, windowEndKey, count) {
     const [ty, tm] = thresholdKey.split('-').map(Number);
     let year = ty, month = tm - 1;
     const results = [];
@@ -523,12 +542,15 @@
       if (isGemeinschaftsabendMonth(year, month)) {
         const day = nthWeekdayOfMonth(year, month, 0, 3); // 3. Sonntag (Sonntag = 0)
         const key = dateKey(year, month, day);
-        if (key >= thresholdKey) {
+        if (key >= thresholdKey && key <= windowEndKey) {
           const ort = gemeinschaftsabendOrt(year, month);
+          const detalle = ort === "im Gym"
+            ? "jeder bringt Essen und Getränke mit"
+            : "jeder bringt Essen mit, der Hausbesitzer sorgt für die Getränke";
           results.push({
             start: key,
             title: "Gemeinschaftsabend",
-            desc: `5:00 pm ${ort} – jeder bringt Essen und Getränke mit`
+            desc: `5:00 pm ${ort} – ${detalle}`
           });
         }
       }
@@ -545,10 +567,18 @@
     // Grenze = erster Tag des GERADE ANGEZEIGTEN Monats (nicht das echte "heute").
     // So verschwinden vergangene Ereignisse automatisch, sobald man im Kalender weiterblättert.
     const thresholdKey = dateKey(current.year, current.month, 1);
+    // Nur Ereignisse zeigen, die höchstens 1 Monat im Voraus liegen.
+    let windowYear = current.year, windowMonth = current.month + 1;
+    if (windowMonth > 11) { windowMonth = 0; windowYear++; }
+    const windowLastDay = new Date(windowYear, windowMonth + 1, 0).getDate();
+    const windowEndKey = dateKey(windowYear, windowMonth, windowLastDay);
 
-    const upcoming = futureEvents.filter(ev => (ev.end || ev.start) >= thresholdKey);
-    const upcomingCentroLuz = getUpcomingCentroLuz(thresholdKey, 1);
-    const upcomingGemeinschaft = getUpcomingGemeinschaftsabend(thresholdKey, 1);
+    const upcoming = futureEvents.filter(ev => {
+      const endOrStart = ev.end || ev.start;
+      return endOrStart >= thresholdKey && ev.start <= windowEndKey;
+    });
+    const upcomingCentroLuz = getUpcomingCentroLuz(thresholdKey, windowEndKey, 1);
+    const upcomingGemeinschaft = getUpcomingGemeinschaftsabend(thresholdKey, windowEndKey, 1);
     const sorted = [...upcoming, ...upcomingCentroLuz, ...upcomingGemeinschaft].sort((a,b) => a.start.localeCompare(b.start));
 
     if (sorted.length === 0) {
