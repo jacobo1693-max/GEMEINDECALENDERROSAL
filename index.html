@@ -287,11 +287,9 @@
 <script>
   // ===== Feste Ereignisse (Ausnahmen, die die wöchentliche Regel überschreiben) =====
   const events = {
-    "2026-08-06": ["Kein Frauen-Bibelstudium und Gebetsstunde"],
     "2026-08-14": ["Beginn ab 3:00 pm – Gemeindeausflug mit Campo 101 in Sainapuchi", "8:00 pm – Jugendstunde – alle Erwachsenen sind ebenfalls herzlich eingeladen"],
     "2026-08-15": ["10:00 am–2:00 pm – Kindertag für die Kinder; für die Erwachsenen Gemeinschaft und verschiedene Aktivitäten", "8:00 pm – Abendgottesdienst"],
     "2026-08-16": ["Kein Gottesdienst in Rosal", "Gemeindeausflug mit Neustädt in Sainapuchi", "10am – Morgengottesdienst, Nachmittags Gemeinschaft"],
-    "2026-08-20": ["Kein Frauen-Bibelstudium"],
     "2026-09-23": ["7:30 pm – Abendversammlung mit Br. David Knelsen"],
     "2026-09-24": ["9:00 am – Frauenfrühstück und Bibelstudium", "7:30 pm – Abendversammlung mit Br. David Knelsen"],
     "2026-09-25": ["7:30 pm – Abendversammlung mit Br. David Knelsen"],
@@ -389,6 +387,14 @@
         result.push("7:00 pm – Jugendstunde in Neustädt");
       } else {
         result.push("7:30 pm – Jugendstunde");
+      }
+    }
+    if (dow === 4) { // Donnerstag
+      const occurrence = Math.floor((day - 1) / 7) + 1;
+      if (occurrence === 2) {
+        result.push("Kein Frauen-Bibelstudium und Gebetsstunde");
+      } else if (isLastWeekdayOfMonth(year, month, day, 4)) {
+        result.push("Kein Frauen-Bibelstudium");
       }
     }
     if (dow === 0) { // Sonntag
